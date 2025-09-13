@@ -11,6 +11,7 @@ from assignation import (
 )
 from costs import assess_fixed_costs, calc_fixed_deltas
 from ingestion import parse_spreadsheets
+from vis import print_full, print_simple
 
 
 def main(spreadsheet, keyfile):
@@ -29,10 +30,6 @@ def main(spreadsheet, keyfile):
     # Assess costs at this point
     assess_fixed_costs(key, assignees, tasks, surprises)
 
-    for df in [key, assignees, surprises, tasks]:
-        print("=" * 80)
-        print(df)
-
     # Split by day
     for day, subdf in assignees.groupby(key["ad"]):
 
@@ -43,17 +40,20 @@ def main(spreadsheet, keyfile):
         unassigned = unassigned_tasks(key, day, subdf, tasks, surprises)
 
         # Try random variations to find the best match, sorted
-        best_matches = find_best_matches(deltas, *unassigned, N=5)
+        best_matches = find_best_matches(deltas, *unassigned, N=3)
 
-        print(f"{day} →")
-        for indices in best_matches[0]:
-            print(f"\tMatched with: {[unassigned[0][i] for i in indices]}")
+        # Give full justification for best, then show the rest
+        print_full(key, day, subdf, unassigned, best_matches[0])
+
+        print("\nNext best options")
+        for grouping in best_matches[1:]:
+            print_simple(key, subdf, unassigned, grouping)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="TODO",
+        description="Turn specific tasking data into task splits",
     )
     parser.add_argument("--data", type=Path)
     parser.add_argument("--key", type=Path)
