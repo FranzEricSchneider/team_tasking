@@ -13,9 +13,9 @@ KEYS = {
     "ts": "task sources",
     "tn": "task number",
     "ktt": "known task team",
-    "stt": "surprise task team",
+    "sp": "surprise profile",
     "sdt": "surprise distribution team",
-    "sdist": "surprise distribution",
+    "sdist": "surprise distribution data",
 }
 
 
@@ -50,7 +50,7 @@ def parse_spreadsheets(file, keyfile):
     df = pandas.read_csv(file)
     assignees = df[[key["a"], key["at"], key["ad"]]].dropna()
     surprises = df[[key["ss"], key["sd"]]].dropna()
-    tasks = df[[key["ts"], key["tn"], key["ktt"], key["stt"]]].dropna()
+    tasks = df[[key["ts"], key["tn"], key["ktt"], key["sp"]]].dropna()
     distributions = df[[key["sdt"], key["sdist"]]].dropna()
 
     # Filter the distribution information into the surprises
@@ -80,11 +80,11 @@ def unpack_dist(key, surprise_df, dist_df, task_df) -> None:
     # Make a temporary working dataframe
     df = surprise_df.merge(task_df, left_on=key["ss"], right_on=key["ts"], how="left")
 
-    # Map the team of each surprise tasker to that team's distribution
-    surprise_df["mean"] = df[key["stt"]].map(
+    # Map the team of each surprise tasker to that team's profile
+    surprise_df["mean"] = df[key["sp"]].map(
         lambda team: float(np.round(distributions[team].mean(), 1))
     )
-    surprise_df["2std"] = df[key["stt"]].map(
+    surprise_df["2std"] = df[key["sp"]].map(
         lambda team: float(np.round(2 * distributions[team].std(), 1))
     )
 
@@ -114,9 +114,9 @@ def parse_dist_dataset(dist_str) -> np.ndarray:
 
 def unpack_surprise_team(key, surprise_df, task_df) -> pandas.DataFrame:
 
-    # Label the surprise_df with the team each surprise source is assigened to
+    # Label the surprise_df with the team each surprise source is assigned to
     return surprise_df.merge(
-        task_df[[key["ts"], key["stt"]]],
+        task_df[[key["ts"], key["ktt"]]],
         left_on=key["ss"],
         right_on=key["ts"],
         how="left",

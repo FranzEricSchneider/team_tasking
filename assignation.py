@@ -33,7 +33,7 @@ def assign_fixed_surprises(key, assignee_df, surprise_df):
 
     # Make a mapping from (day, team): [surprise source 1, surprise source 2, ...]
     mapping = (
-        surprise_df.groupby([key["sd"], key["stt"]])[key["ss"]].apply(list).to_dict()
+        surprise_df.groupby([key["sd"], key["ktt"]])[key["ss"]].apply(list).to_dict()
     )
 
     # Apply that map to the assignees
