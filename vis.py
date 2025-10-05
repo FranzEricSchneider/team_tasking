@@ -17,7 +17,8 @@ def print_full(key, day, assignee_df, unassigned, grouping):
         print(f"{name}: {worker[key['a']]:<12}[Team: {worker[key['at']]}]")
         print(f"\tFor sure covering [{fc} tasks]: {worker['fixed']}")
         print(
-            f"\tFor sure covering {key['ss'].lower()}s [{fsc} expected tasks]: {worker['fixed surprises']}"
+            f"\tFor sure covering {key['ss'].lower()}s [{fsc} expected tasks]:"
+            f" {list(zip(worker['fixed surprises'], worker['fixed surprise sources']))}"
         )
         print(f"\tTotal so far: {fc + fsc:.1f} tasks, variation ±{fsv:.1f}")
 

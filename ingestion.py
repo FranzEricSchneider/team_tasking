@@ -53,6 +53,10 @@ def parse_spreadsheets(file, keyfile):
     tasks = df[[key["ts"], key["tn"], key["ktt"], key["sp"]]].dropna()
     distributions = df[[key["sdt"], key["sdist"]]].dropna()
 
+    # Friday surprises will also add work for Saturday, so duplicate the Friday
+    # surprise sources
+    surprises = duplicate_suprises(key, surprises)
+
     # Filter the distribution information into the surprises
     unpack_dist(key, surprises, distributions, tasks)
 
@@ -64,6 +68,21 @@ def parse_spreadsheets(file, keyfile):
     remap_days(key, assignees)
 
     return key, assignees, surprises, tasks
+
+
+def duplicate_suprises(key, surprise_df):
+    """
+    Duplicate the surprise sources from Friday onto Saturday, since surprise
+    work that comes up on Friday will add into Saturday. Also label the
+    surprises with their source.
+    """
+
+    mapping = {"Friday": "Fri→ Sat", "Saturday": "Sat→ Sun"}
+    surprise_df = surprise_df.assign(source=surprise_df[key["sd"]].map(mapping))
+
+    friday_rows = surprise_df[surprise_df[key["sd"]] == "Friday"].copy()
+    on_saturday = friday_rows.assign(**{key["sd"]: "Saturday"})
+    return pandas.concat([surprise_df, on_saturday], ignore_index=True)
 
 
 def unpack_dist(key, surprise_df, dist_df, task_df) -> None:

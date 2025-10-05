@@ -35,9 +35,17 @@ def assign_fixed_surprises(key, assignee_df, surprise_df):
     mapping = (
         surprise_df.groupby([key["sd"], key["ktt"]])[key["ss"]].apply(list).to_dict()
     )
-
     # Apply that map to the assignees
     assignee_df["fixed surprises"] = assignee_df.apply(
+        lambda row: mapping[(row[key["ad"]], row[key["at"]])], axis=1
+    )
+
+    # Then duplicate that for the surprise sources
+    mapping = (
+        surprise_df.groupby([key["sd"], key["ktt"]])["source"].apply(list).to_dict()
+    )
+    # Apply that map to the assignees
+    assignee_df["fixed surprise sources"] = assignee_df.apply(
         lambda row: mapping[(row[key["ad"]], row[key["at"]])], axis=1
     )
 
